@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet id="1" author="Rajeshwari.S" labels="initial schema creation">
+        <preConditions>
+            <not>
+                <tableExists tableName="user" schemaName="public"/>
+                <tableExists tableName="product" schemaName="public"/>
+                <tableExists tableName="address" schemaName="public"/>
+                <tableExists tableName="tax_identifiers" schemaName="public"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="user">
+            <column name="user_id" type="bigint">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_user_id"
+                             nullable="false"/>
+            </column>
+            <column name="user_name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="product">
+            <column name="product_id" type="bigint">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_product_id"
+                             nullable="false"/>
+            </column>
+            <column name="product_name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="address">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_address_id"
+                             nullable="false"/>
+            </column>
+            <column name="line_1" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="line_2" type="varchar(250)"/>
+            <column name="city" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="zip" type="varchar(10)"/>
+            <column name="country" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="tax_identifiers">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_tax_identifiers_id"
+                             nullable="false"/>
+            </column>
+            <column name="PAN" type="varchar(250)"/>
+            <column name="EIN" type="varchar(250)"/>
+        </createTable>
+
+        <rollback>
+            <delete tableName="user" schemaName="public"/>
+            <delete tableName="product" schemaName="public"/>
+            <delete tableName="address" schemaName="public"/>
+            <delete tableName="tax_identifiers" schemaName="public"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="2" author="Rajeshwari.S" labels="mapping relationships creation">
+        <preConditions>
+            <not>
+                <tableExists tableName="user_product_subscription" schemaName="public"/>
+                <tableExists tableName="business_profile" schemaName="public"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="user_product_subscription">
+            <column name="id" type="uuid">
+                <constraints primaryKeyName="pk_user_product_subscription_id"
+                             primaryKey="true"
+                             nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints foreignKeyName="fk_user_product_subscription_user_id"
+                             references="user(user_id)"
+                             deleteCascade="true"
+                             nullable="false"/>
+            </column>
+            <column name="product_id" type="bigint">
+                <constraints foreignKeyName="fk_user_product_subscription_product_id"
+                             references="product(product_id)"
+                             deleteCascade="true"
+                             nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="business_profile">
+            <column name="id" type="bigint">
+                <constraints primaryKeyName="pk_business_profile_id"
+                             primaryKey="true"
+                             nullable="false"/>
+            </column>
+            <column name="company_name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="legal_name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="business_address_id" type="bigint">
+                <constraints foreignKeyName="fk_business_profile_business_address_id"
+                             references="address(id)"
+                             deleteCascade="true"
+                             nullable="false"/>
+            </column>
+            <column name="legal_address_id" type="bigint">
+                <constraints foreignKeyName="fk_business_profile_legal_address_id"
+                             references="address(id)"
+                             deleteCascade="true"
+                             nullable="false"/>
+            </column>
+            <column name="tax_identifiers_id" type="bigint">
+                <constraints foreignKeyName="fk_business_profile_tax_identifiers_id"
+                             references="tax_identifiers(id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="email" type="varchar(250)"/>
+            <column name="website" type="varchar(250)"/>
+        </createTable>
+
+        <rollback>
+            <delete tableName="user_product_subscription" schemaName="public"/>
+            <delete tableName="business_profile" schemaName="public"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="3" author="Rajeshwari.S" labels="creating sequences">
+        <createSequence cycle="false" dataType="bigint" incrementBy="1" minValue="1"
+                        schemaName="public" sequenceName="seq_user_id" startValue="1"/>
+        <createSequence cycle="false" dataType="bigint" incrementBy="1" minValue="1"
+                        schemaName="public" sequenceName="seq_product_id" startValue="1"/>
+        <createSequence cycle="false" dataType="bigint" incrementBy="1" minValue="1"
+                        schemaName="public" sequenceName="seq_address_id" startValue="1"/>
+        <createSequence cycle="false" dataType="bigint" incrementBy="1" minValue="1"
+                        schemaName="public" sequenceName="seq_tax_identifiers_id" startValue="1"/>
+        <createSequence cycle="false" dataType="bigint" incrementBy="1" minValue="1"
+                        schemaName="public" sequenceName="seq_business_profile_id" startValue="1"/>
+    </changeSet>
+
+    <changeSet id="4" author="Rajeshwari.S" labels="map business profile to user">
+        <addColumn tableName="user" schemaName="public">
+            <column name="business_profile_id" type="bigint">
+                <constraints foreignKeyName="fk_user_business_profile_id"
+                             references="business_profile(id)"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

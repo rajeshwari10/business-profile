@@ -1,0 +1,60 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: "business-profile-service"
+  datasource:
+    url: jdbc:postgresql://localhost:5432/business-profile
+    username: postgres
+    password: postrajee@1234
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 35000
+      maximum-pool-size: 5
+      max-lifetime: 5000000
+  liquibase:
+    change-log: classpath:/db/changelog/2023-08-26-master-changelog.xml
+    enabled: true
+    database-change-log-table: business_profile_service_change_log
+    database-change-log-lock-table: business_profile_service_change_log_lock
+
+management:
+  endpoint:
+    hystrix:
+      stream:
+        enabled: true
+        path: /business-profile-hystrix
+  endpoints:
+    web:
+      exposure:
+        include: health,refresh,hystrix.stream
+
+feign:
+  circuitbreaker:
+    enabled: true
+
+productService:
+  url: "http://localhost:8082/product"
+  api:
+    validateProfile: "/validate/profile"
+
+hystrix:
+  command:
+    default:
+      circuitBreaker:
+        requestVolumeThreshold: 50
+        errorThresholdPercentage: 50
+        sleepWindowInMilliseconds: 5000
+      execution:
+        timeout:
+          enabled: true
+        isolation:
+          thread:
+            timeoutInMilliseconds: 1000
+  threadPool:
+    default:
+      coreSize: 10
+      maximumSize: 30
+      maxQueueSize: 100
+      keepAliveTimeMinutes: 2
